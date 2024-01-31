@@ -13,7 +13,7 @@
     "url": "https://github.com/Sage-ERP-X3/LokiJS.git"
   },
   "publishConfig": {
-    "registry": "https://npm.pkg.github.com/",
+    "registry": "https://repository.sagex3.com:8443/repository/x3-npm-hosted",
     "tag": "latest"
   },
   "keywords": [

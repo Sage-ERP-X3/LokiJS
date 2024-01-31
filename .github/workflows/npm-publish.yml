@@ -23,32 +23,16 @@ jobs:
                   node-version: 20
                   registry-url: https://npm.pkg.github.com/
             - uses: actions/checkout@v2
+            - run: npm i -g @kenan/npm-cli-login
             - run: npm ci
             - name: Run tests
               run: npm run build
             - run: npm run test
+            - name: Nexus login
+              run: npm-cli-login -u ${X3_NEXUS_USERNAME} -p ${X3_NEXUS_PASSWORD} -e sagex3ci@sage.com -r https://repository.sagex3.com:8443/repository/x3-npm-hosted --scope @sage
             - name: Release package
               run: npx semantic-release
               env:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-                  NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-                  NPM_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-    copy:
-        needs: publish
-        runs-on: ubuntu-latest
-        permissions:
-            contents: write
-            packages: write
-            pull-requests: write
-            issues: write
-        steps:
-            - uses: actions/setup-node@v2
-              with:
-                  node-version: 14
-            - run: npm i -g npm-copy
-            - name: Copy package to X3 Nexus Repository
-              run: npm-copy --from https://npm.pkg.github.com/ --from-token "${NODE_AUTH_TOKEN}" --to https://repository.sagex3.com:8443/repository/x3-npm-hosted --to-username "${X3_NEXUS_USERNAME}" --to-password "${X3_NEXUS_PASSWORD}" --to-email bence.laky@sage.com %40sage%2Flokijs
-              env:
                   X3_NEXUS_PASSWORD: ${{ secrets.X3_NEXUS_PASSWORD }}
                   X3_NEXUS_USERNAME: ${{ secrets.X3_NEXUS_USERNAME }}
-                  NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
