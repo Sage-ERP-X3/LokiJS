@@ -1,6 +1,6 @@
 {
   "name": "@sage/lokijs",
-  "version": "1.6.1",
+  "version": "1.6.2",
   "description": "Fast document oriented javascript in-memory database",
   "main": "src/lokijs.js",
   "types": "types.d.ts",
