@@ -1408,6 +1408,7 @@ declare class Collection<E extends object> extends LokiEventEmitter {
     getChangeDelta: (obj: any, old?: any) => any;
     getObjectDelta: (oldObject: any, newObject?: any) => any;
     setChangesApi: (enabled?: boolean) => void;
+    caseInsensitive?:boolean;
 
     /**
      * @param name - collection name
