@@ -12,6 +12,10 @@
     "type": "git",
     "url": "https://github.com/Sage-ERP-X3/LokiJS.git"
   },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com/",
+    "tag": "latest"
+  },
   "keywords": [
     "javascript",
     "document-oriented",
@@ -24,7 +28,7 @@
   ],
   "scripts": {
     "lint": "jshint src",
-    "test:browser": "jest --config=jest.browser.config.js --no-cache" ,
+    "test:browser": "jest --config=jest.browser.config.js --no-cache",
     "test:node": "jest --config=jest.node.config.js --no-cache",
     "pretest": "npm run lint",
     "test": "npm run test:browser && npm run test:node",
