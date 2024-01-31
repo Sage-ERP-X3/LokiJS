@@ -219,7 +219,7 @@
      *     Since binary indices on a property might need to index [12, NaN, new Date(), Infinity], we
      *     need this function (as well as gtHelper) to always ensure one value is LT, GT, or EQ to another.
      */
-    function ltHelper(prop1, prop2, equal) {
+    function ltHelper(prop1, prop2, equal, caseInsensitive) {
       var cv1, cv2, t1, t2;
 
       // if one of the params is falsy or strictly true or not equal to itself
@@ -268,6 +268,14 @@
         return false;
       }
 
+      if (caseInsensitive && typeof prop1 === 'string' && typeof prop2 === 'string') {
+        var lowerCaseProp1 = prop1.toLowerCase();
+        var lowerCaseProp2 = prop2.toLowerCase();
+        if (lowerCaseProp1 < lowerCaseProp2) return true;
+        if (lowerCaseProp1 > lowerCaseProp2) return false;
+        if (lowerCaseProp1 == lowerCaseProp2) return equal;
+      }
+
       if (prop1 < prop2) return true;
       if (prop1 > prop2) return false;
       if (prop1 == prop2) return equal;
@@ -287,7 +295,7 @@
       return false;
     }
 
-    function gtHelper(prop1, prop2, equal) {
+    function gtHelper(prop1, prop2, equal, caseInsensitive) {
       var cv1, cv2, t1, t2;
 
       // 'falsy' and Boolean handling
@@ -334,6 +342,14 @@
         return true;
       }
 
+      if (caseInsensitive && typeof prop1 === 'string' && typeof prop2 === 'string') {
+        var lowerCaseProp1 = prop1.toLowerCase();
+        var lowerCaseProp2 = prop2.toLowerCase();
+        if (lowerCaseProp1 > lowerCaseProp2) return true;
+        if (lowerCaseProp1 < lowerCaseProp2) return false;
+        if (lowerCaseProp1 == lowerCaseProp2) return equal;
+      }
+
       if (prop1 > prop2) return true;
       if (prop1 < prop2) return false;
       if (prop1 == prop2) return equal;
@@ -354,14 +370,14 @@
       return false;
     }
 
-    function sortHelper(prop1, prop2, desc) {
+    function sortHelper(prop1, prop2, desc, caseInsensitive) {
       if (Comparators.aeq(prop1, prop2)) return 0;
 
-      if (Comparators.lt(prop1, prop2, false)) {
+      if (Comparators.lt(prop1, prop2, false, caseInsensitive)) {
         return (desc) ? (1) : (-1);
       }
 
-      if (Comparators.gt(prop1, prop2, false)) {
+      if (Comparators.gt(prop1, prop2, false, caseInsensitive)) {
         return (desc) ? (-1) : (1);
       }
 
@@ -377,7 +393,7 @@
      * @param {object} obj2 - second object to compare
      * @returns {integer} 0, -1, or 1 to designate if identical (sortwise) or which should be first
      */
-    function compoundeval(properties, obj1, obj2) {
+    function compoundeval(properties, obj1, obj2, caseInsensitive) {
       var res = 0;
       var prop, field, val1, val2, arr, path;
       for (var i = 0, len = properties.length; i < len; i++) {
@@ -391,7 +407,7 @@
           val1 = obj1[field];
           val2 = obj2[field];
         }
-        res = sortHelper(val1, val2, prop[1]);
+        res = sortHelper(val1, val2, prop[1], caseInsensitive);
         if (res !== 0) {
           return res;
         }
@@ -409,7 +425,7 @@
      * @param {any} extra - extra arg to also pass to compare fun
      * @param {number} poffset - index of the item in 'paths' to start the sub-scan from
      */
-    function dotSubScan(root, paths, fun, value, extra, poffset) {
+    function dotSubScan(root, paths, fun, value, extra, poffset, caseInsensitive) {
       var pathOffset = poffset || 0;
       var path = paths[pathOffset];
 
@@ -421,16 +437,16 @@
       if (pathOffset + 1 >= paths.length) {
         // if we have already expanded out the dot notation,
         // then just evaluate the test function and value on the element
-        valueFound = fun(element, value, extra);
+        valueFound = fun(element, value, extra, caseInsensitive);
       } else if (Array.isArray(element)) {
         for (var index = 0, len = element.length; index < len; index += 1) {
-          valueFound = dotSubScan(element[index], paths, fun, value, extra, pathOffset + 1);
+          valueFound = dotSubScan(element[index], paths, fun, value, extra, pathOffset + 1, caseInsensitive);
           if (valueFound === true) {
             break;
           }
         }
       } else {
-        valueFound = dotSubScan(element, paths, fun, value, extra, pathOffset + 1);
+        valueFound = dotSubScan(element, paths, fun, value, extra, pathOffset + 1, caseInsensitive);
       }
 
       return valueFound;
@@ -449,10 +465,10 @@
       return null;
     }
 
-    function doQueryOp(val, op, record) {
+    function doQueryOp(val, op, record, caseInsensitive) {
       for (var p in op) {
         if (hasOwnProperty.call(op, p)) {
-          return LokiOps[p](val, op[p], record);
+          return LokiOps[p](val, op[p], record, caseInsensitive);
         }
       }
       return false;
@@ -486,20 +502,20 @@
       },
 
       // loki comparisons: return identical unindexed results as indexed comparisons
-      $gt: function (a, b) {
-        return Comparators.gt(a, b, false);
+      $gt: function (a, b, rec, caseInsensitive) {
+        return Comparators.gt(a, b, false, caseInsensitive);
       },
 
-      $gte: function (a, b) {
-        return Comparators.gt(a, b, true);
+      $gte: function (a, b, rec, caseInsensitive) {
+        return Comparators.gt(a, b, true, caseInsensitive);
       },
 
-      $lt: function (a, b) {
-        return Comparators.lt(a, b, false);
+      $lt: function (a, b, rec, caseInsensitive) {
+        return Comparators.lt(a, b, false, caseInsensitive);
       },
 
-      $lte: function (a, b) {
-        return Comparators.lt(a, b, true);
+      $lte: function (a, b, rec, caseInsensitive) {
+        return Comparators.lt(a, b, true, caseInsensitive);
       },
 
       // lightweight javascript comparisons
@@ -534,7 +550,7 @@
         return b.indexOf(a) !== -1;
       },
 
-      $inSet: function(a, b) {
+      $inSet: function (a, b) {
         return b.has(a);
       },
 
@@ -586,7 +602,7 @@
         return false;
       },
 
-      $elemMatch: function (a, b) {
+      $elemMatch: function (a, b, rec, caseInsensitive) {
         if (Array.isArray(a)) {
           return a.some(function (item) {
             return Object.keys(b).every(function (property) {
@@ -596,16 +612,16 @@
               }
 
               if (property.indexOf('.') !== -1) {
-                return dotSubScan(item, property.split('.'), doQueryOp, b[property], item);
+                return dotSubScan(item, property.split('.'), doQueryOp, b[property], item, undefined, caseInsensitive);
               }
-              return doQueryOp(item[property], filter, item);
+              return doQueryOp(item[property], filter, item, caseInsensitive);
             });
           });
         }
         return false;
       },
 
-      $type: function (a, b, record) {
+      $type: function (a, b, record, caseInsensitive) {
         var type = typeof a;
         if (type === 'object') {
           if (Array.isArray(a)) {
@@ -614,23 +630,23 @@
             type = 'date';
           }
         }
-        return (typeof b !== 'object') ? (type === b) : doQueryOp(type, b, record);
+        return (typeof b !== 'object') ? (type === b) : doQueryOp(type, b, record, caseInsensitive);
       },
 
       $finite: function (a, b) {
         return (b === isFinite(a));
       },
 
-      $size: function (a, b, record) {
+      $size: function (a, b, record, caseInsensitive) {
         if (Array.isArray(a)) {
-          return (typeof b !== 'object') ? (a.length === b) : doQueryOp(a.length, b, record);
+          return (typeof b !== 'object') ? (a.length === b) : doQueryOp(a.length, b, record, caseInsensitive);
         }
         return false;
       },
 
-      $len: function (a, b, record) {
+      $len: function (a, b, record, caseInsensitive) {
         if (typeof a === 'string') {
-          return (typeof b !== 'object') ? (a.length === b) : doQueryOp(a.length, b, record);
+          return (typeof b !== 'object') ? (a.length === b) : doQueryOp(a.length, b, record, caseInsensitive);
         }
         return false;
       },
@@ -643,22 +659,22 @@
       // a is the value in the collection
       // b is the nested query operation (for '$not')
       //   or an array of nested query operations (for '$and' and '$or')
-      $not: function (a, b, record) {
-        return !doQueryOp(a, b, record);
+      $not: function (a, b, record, caseInsensitive) {
+        return !doQueryOp(a, b, record, caseInsensitive);
       },
 
-      $and: function (a, b, record) {
+      $and: function (a, b, record, caseInsensitive) {
         for (var idx = 0, len = b.length; idx < len; idx += 1) {
-          if (!doQueryOp(a, b[idx], record)) {
+          if (!doQueryOp(a, b[idx], record, caseInsensitive)) {
             return false;
           }
         }
         return true;
       },
 
-      $or: function (a, b, record) {
+      $or: function (a, b, record, caseInsensitive) {
         for (var idx = 0, len = b.length; idx < len; idx += 1) {
-          if (doQueryOp(a, b[idx], record)) {
+          if (doQueryOp(a, b[idx], record, caseInsensitive)) {
             return true;
           }
         }
@@ -678,11 +694,11 @@
     var valueLevelOps = ['$eq', '$aeq', '$ne', '$dteq', '$gt', '$gte', '$lt', '$lte', '$jgt', '$jgte', '$jlt', '$jlte', '$type'];
     valueLevelOps.forEach(function (op) {
       var fun = LokiOps[op];
-      LokiOps['$' + op] = function (a, spec, record) {
+      LokiOps['$' + op] = function (a, spec, record, caseInsensitive) {
         if (typeof spec === 'string') {
-          return fun(a, record[spec]);
+          return fun(a, record[spec], undefined, caseInsensitive);
         } else if (typeof spec === 'function') {
-          return fun(a, spec(record));
+          return fun(a, spec(record), undefined, caseInsensitive);
         } else {
           throw new Error('Invalid argument to $$ matcher');
         }
@@ -1781,7 +1797,7 @@
           copyColl.getData = coll.getData;
           Object.defineProperty(copyColl, 'data', {
             /* jshint loopfunc:true */
-            get: function() {
+            get: function () {
               var data = this.getData();
               this.getData = null;
               Object.defineProperty(this, 'data', { value: data });
@@ -3300,6 +3316,7 @@
         });
       }
 
+      var caseInsensitive = this.collection.caseInsensitive;
       // otherwise use loki sort which will return same results if column is indexed or not
       var wrappedComparer =
         (function (prop, desc, data) {
@@ -3313,7 +3330,7 @@
               val1 = data[a][prop];
               val2 = data[b][prop];
             }
-            return sortHelper(val1, val2, desc);
+            return sortHelper(val1, val2, desc, caseInsensitive);
           };
         })(propname, options.desc, this.collection.data);
 
@@ -3361,10 +3378,11 @@
         this.filteredrows = this.collection.prepareFullDocIndex();
       }
 
+      var caseInsensitive = this.collection.caseInsensitive;
       var wrappedComparer =
         (function (props, data) {
           return function (a, b) {
-            return compoundeval(props, data[a], data[b]);
+            return compoundeval(props, data[a], data[b], caseInsensitive);
           };
         })(properties, this.collection.data);
 
@@ -3609,7 +3627,7 @@
           for (i = 0; i < len; i++) {
             rowIdx = filter[i];
             record = t[rowIdx];
-            if (dotSubScan(record, property, fun, value, record)) {
+            if (dotSubScan(record, property, fun, value, record, undefined, this.collection.caseInsensitive)) {
               result.push(rowIdx);
               if (firstOnly) {
                 this.filteredrows = result;
@@ -3621,7 +3639,7 @@
           for (i = 0; i < len; i++) {
             rowIdx = filter[i];
             record = t[rowIdx];
-            if (fun(record[property], value, record)) {
+            if (fun(record[property], value, record, this.collection.caseInsensitive)) {
               result.push(rowIdx);
               if (firstOnly) {
                 this.filteredrows = result;
@@ -3641,7 +3659,7 @@
             property = property.split('.');
             for (i = 0; i < len; i++) {
               record = t[i];
-              if (dotSubScan(record, property, fun, value, record)) {
+              if (dotSubScan(record, property, fun, value, record, undefined, this.collection.caseInsensitive)) {
                 result.push(i);
                 if (firstOnly) {
                   this.filteredrows = result;
@@ -3653,7 +3671,7 @@
           } else {
             for (i = 0; i < len; i++) {
               record = t[i];
-              if (fun(record[property], value, record)) {
+              if (fun(record[property], value, record, this.collection.caseInsensitive)) {
                 result.push(i);
                 if (firstOnly) {
                   this.filteredrows = result;
@@ -4967,6 +4985,7 @@
      * @param {boolean} [options.serializableIndices=true[]] - converts date values on binary indexed properties to epoch time
      * @param {boolean} [options.disableFreeze=true] - when false all docs are frozen
      * @param {string} [options.cloneMethod='parse-stringify'] - 'parse-stringify', 'jquery-extend-deep', 'shallow', 'shallow-assign'
+     * @param {string} [options.caseInsensitive=false] - if set to true, casing is ignored
      * @param {int=} options.ttl - age of document (in ms.) before document is considered aged/stale.
      * @param {int=} options.ttlInterval - time interval for clearing out 'aged' documents; not set by default.
      * @see {@link Loki#addCollection} for normal creation of collections
@@ -5008,6 +5027,8 @@
 
       /* OPTIONS */
       options = options || {};
+
+      this.caseInsensitive = options.caseInsensitive || false;
 
       // exact match and unique constraints
       if (options.hasOwnProperty('unique')) {
@@ -5478,7 +5499,7 @@
         'values': this.prepareFullDocIndex()
       };
       this.binaryIndices[property] = index;
-
+      var caseInsensitive = this.caseInsensitive;
       var wrappedComparer =
         (function (prop, data) {
           var val1, val2;
@@ -5493,8 +5514,8 @@
             }
 
             if (val1 !== val2) {
-              if (Comparators.lt(val1, val2, false)) return -1;
-              if (Comparators.gt(val1, val2, false)) return 1;
+              if (Comparators.lt(val1, val2, false, caseInsensitive)) return -1;
+              if (Comparators.gt(val1, val2, false, caseInsensitive)) return 1;
             }
             return 0;
           };
@@ -5609,11 +5630,11 @@
         if (options.randomSampling) {
           // validate first and last
           if (!LokiOps.$lte(Utils.getIn(this.data[biv[0]], property, usingDotNotation),
-            Utils.getIn(this.data[biv[1]], property, usingDotNotation))) {
+            Utils.getIn(this.data[biv[1]], property, usingDotNotation), undefined, this.caseInsensitive)) {
             valid = false;
           }
           if (!LokiOps.$lte(Utils.getIn(this.data[biv[len - 2]], property, usingDotNotation),
-            Utils.getIn(this.data[biv[len - 1]], property, usingDotNotation))) {
+            Utils.getIn(this.data[biv[len - 1]], property, usingDotNotation), undefined, this.caseInsensitive)) {
             valid = false;
           }
 
@@ -5628,8 +5649,8 @@
             for (idx = 0; idx < iter - 1; idx++) {
               // calculate random position
               pos = Math.floor(Math.random() * (len - 1));
-              if (!LokiOps.$lte(Utils.getIn(this.data[biv[pos]], property, usingDotNotation),
-                Utils.getIn(this.data[biv[pos + 1]], property, usingDotNotation))) {
+              if (!LokiOps.$lte(Utils.getIn(this.data[biv[pos]], property, usingDotNotation,
+                Utils.getIn(this.data[biv[pos + 1]], property, usingDotNotation), undefined, this.caseInsensitive))) {
                 valid = false;
                 break;
               }
@@ -5640,7 +5661,7 @@
           // validate that the binary index is sequenced properly
           for (idx = 0; idx < len - 1; idx++) {
             if (!LokiOps.$lte(Utils.getIn(this.data[biv[idx]], property, usingDotNotation),
-              Utils.getIn(this.data[biv[idx + 1]], property, usingDotNotation))) {
+              Utils.getIn(this.data[biv[idx + 1]], property, usingDotNotation), undefined, this.caseInsensitive)) {
               valid = false;
               break;
             }
@@ -6182,7 +6203,7 @@
           obj.meta.version = 0;
         }
 
-        for (var i = 0, len = this.uniqueNames.length; i < len; i ++) {
+        for (var i = 0, len = this.uniqueNames.length; i < len; i++) {
           this.getUniqueIndex(this.uniqueNames[i], true).set(obj);
         }
 
@@ -6350,7 +6371,7 @@
         });
 
         if (this.isIncremental) {
-          for(idx=0; idx < len; idx++) {
+          for (idx = 0; idx < len; idx++) {
             this.dirtyIds.push(this.idIndex[positions[idx]]);
           }
         }
@@ -6800,12 +6821,12 @@
       }
 
       // if not in index and our value is less than the found one
-      if (Comparators.gt(val, Utils.getIn(rcd[index[ubound]], prop, usingDotNotation), false)) {
+      if (Comparators.gt(val, Utils.getIn(rcd[index[ubound]], prop, usingDotNotation), false, this.caseInsensitive)) {
         return ubound + 1;
       }
 
       // either hole or first nonmatch
-      if (Comparators.aeq(val, Utils.getIn(rcd[index[ubound - 1]], prop, usingDotNotation))) {
+      if (Comparators.aeq(val, Utils.getIn(rcd[index[ubound - 1]], prop, usingDotNotation, this.caseInsensitive))) {
         return ubound - 1;
       }
 
@@ -6846,62 +6867,61 @@
       switch (op) {
         case '$eq':
         case '$aeq':
-          if (Comparators.lt(val, minVal, false) || Comparators.gt(val, maxVal, false)) {
+          if (Comparators.lt(val, minVal, false) || Comparators.gt(val, maxVal, false, this.caseInsensitive)) {
             return [0, -1];
           }
           break;
         case '$dteq':
-          if (Comparators.lt(val, minVal, false) || Comparators.gt(val, maxVal, false)) {
+          if (Comparators.lt(val, minVal, false) || Comparators.gt(val, maxVal, false, this.caseInsensitive)) {
             return [0, -1];
           }
           break;
         case '$gt':
-          // none are within range
-          if (Comparators.gt(val, maxVal, true)) {
+          if (Comparators.gt(val, maxVal, true, this.caseInsensitive)) {
             return [0, -1];
           }
           // all are within range
-          if (Comparators.gt(minVal, val, false)) {
+          if (Comparators.gt(minVal, val, false, this.caseInsensitive)) {
             return [min, max];
           }
           break;
         case '$gte':
           // none are within range
-          if (Comparators.gt(val, maxVal, false)) {
+          if (Comparators.gt(val, maxVal, false, this.caseInsensitive)) {
             return [0, -1];
           }
           // all are within range
-          if (Comparators.gt(minVal, val, true)) {
+          if (Comparators.gt(minVal, val, true, this.caseInsensitive)) {
             return [min, max];
           }
           break;
         case '$lt':
           // none are within range
-          if (Comparators.lt(val, minVal, true)) {
+          if (Comparators.lt(val, minVal, true, this.caseInsensitive)) {
             return [0, -1];
           }
           // all are within range
-          if (Comparators.lt(maxVal, val, false)) {
+          if (Comparators.lt(maxVal, val, false, this.caseInsensitive)) {
             return [min, max];
           }
           break;
         case '$lte':
           // none are within range
-          if (Comparators.lt(val, minVal, false)) {
+          if (Comparators.lt(val, minVal, false, this.caseInsensitive)) {
             return [0, -1];
           }
           // all are within range
-          if (Comparators.lt(maxVal, val, true)) {
+          if (Comparators.lt(maxVal, val, true, this.caseInsensitive)) {
             return [min, max];
           }
           break;
         case '$between':
           // none are within range (low range is greater)
-          if (Comparators.gt(val[0], maxVal, false)) {
+          if (Comparators.gt(val[0], maxVal, false, this.caseInsensitive)) {
             return [0, -1];
           }
           // none are within range (high range lower)
-          if (Comparators.lt(val[1], minVal, false)) {
+          if (Comparators.lt(val[1], minVal, false, this.caseInsensitive)) {
             return [0, -1];
           }
 
@@ -6911,8 +6931,8 @@
           if (lbound < 0) lbound++;
           if (ubound > max) ubound--;
 
-          if (!Comparators.gt(Utils.getIn(rcd[index[lbound]], prop, usingDotNotation), val[0], true)) lbound++;
-          if (!Comparators.lt(Utils.getIn(rcd[index[ubound]], prop, usingDotNotation), val[1], true)) ubound--;
+          if (!Comparators.gt(Utils.getIn(rcd[index[lbound]], prop, usingDotNotation), val[0], true, this.caseInsensitive)) lbound++;
+          if (!Comparators.lt(Utils.getIn(rcd[index[ubound]], prop, usingDotNotation), val[1], true, this.caseInsensitive)) ubound--;
 
           if (ubound < lbound) return [0, -1];
 
