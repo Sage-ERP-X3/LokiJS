@@ -29,10 +29,11 @@ jobs:
               run: npm run build
             - run: npm run test
             - name: Nexus login
-              run: npm-cli-login -u ${X3_NEXUS_USERNAME} -p ${X3_NEXUS_PASSWORD} -e sagex3ci@sage.com -r https://repository.sagex3.com:8443/repository/x3-npm-hosted --scope @sage
+              run: npm-cli-login -u "${X3_NEXUS_USERNAME}" -p "${X3_NEXUS_PASSWORD}" -e "sagex3ci@sage.com" -r https://repository.sagex3.com:8443/repository/x3-npm-hosted --scope @sage
+              env:
+                  X3_NEXUS_PASSWORD: ${{ secrets.X3_NEXUS_PASSWORD }}
+                  X3_NEXUS_USERNAME: ${{ secrets.X3_NEXUS_USERNAME }}
             - name: Release package
               run: npx semantic-release
               env:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-                  X3_NEXUS_PASSWORD: ${{ secrets.X3_NEXUS_PASSWORD }}
-                  X3_NEXUS_USERNAME: ${{ secrets.X3_NEXUS_USERNAME }}
