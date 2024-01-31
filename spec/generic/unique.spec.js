@@ -1,6 +1,5 @@
-if (typeof (window) === 'undefined') {
-  var loki = require('../../src/lokijs.js');
-}
+var loki = require('../../src/lokijs');
+
 describe('Constraints', function () {
 
   it('should retrieve records with by()', function () {

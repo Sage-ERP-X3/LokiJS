@@ -1,4 +1,4 @@
-if (typeof(window) === 'undefined') var loki = require('../../src/lokijs.js');
+var loki = require('../../src/lokijs');
 
 describe('changesApi', function () {
   it('does what it says on the tin', function () {

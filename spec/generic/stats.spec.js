@@ -1,7 +1,4 @@
- if (typeof (window) === 'undefined') {
-   var loki = require('../../src/lokijs.js');
-   // var suite = require('../helpers/assert-helpers.js').suite;
- }
+var loki = require('../../src/lokijs');
 
  describe('stats', function () {
    var db = new loki();

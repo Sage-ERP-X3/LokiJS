@@ -1,3 +1,6 @@
+var loki = require('../../src/lokijs');
+var IncrementalIndexedDBAdapter = require('../../src/incremental-indexeddb-adapter');
+
 describe('IncrementalIndexedDBAdapter', function () {
   it('initializes Loki properly', function() {
     var adapter = new IncrementalIndexedDBAdapter('tests');

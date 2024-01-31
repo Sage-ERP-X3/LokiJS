@@ -1,0 +1,22 @@
+# Automatic validation checks on every push or pull-request to remote main
+name: Validation
+on:
+    pull_request:
+        types: [opened, reopened, synchronize]
+
+jobs:
+    static_checks:
+        name: Static Checks
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout Repo
+              uses: actions/checkout@main
+
+            - name: Setup Node
+              uses: actions/setup-node@main
+              with:
+                  node-version: 20
+            - name: Install Dependencies
+            - run: npm ci
+            - name: Run tests
+              run: npm run build

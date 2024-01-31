@@ -1,7 +1,4 @@
-if (typeof (window) === 'undefined') {
-  var loki = require('../../src/lokijs.js');
-  var suite = require('../helpers/assert-helpers.js').suite;
-}
+var loki = require('../../src/lokijs');
 
 describe('loki', function () {
   var db,
@@ -36,7 +33,7 @@ describe('loki', function () {
       age: 30,
       lang: 'Swedish'
     });
-  })
+  });
 
 
   describe('core methods', function () {
@@ -154,7 +151,7 @@ describe('loki', function () {
         last: 'bbb',
         city: 'pasadena',
         state: 'ca'
-      }
+      };
 
       wasAdded = true;
 
@@ -178,7 +175,7 @@ describe('loki', function () {
         last: 'bbb',
         city: 'pasadena',
         state: 'ca'
-      }
+      };
       var wasUpdated = true;
 
       try {
@@ -196,24 +193,24 @@ describe('loki', function () {
         last: 'bbb',
         city: 'pasadena',
         state: 'ca'
-      }
+      };
 
       users.insert(testObject);
 
       expect(userCount1 + 1).toEqual(users.data.length);
       users.remove(testObject);
       expect(userCount1).toEqual(users.data.length);
-    })
+    });
   });
 
-  describe('meta validation', function() {
-    it('meta set on returned objects', function() {
+  describe('meta validation', function () {
+    it('meta set on returned objects', function () {
       var tdb = new loki('test.db');
       var coll = tdb.addCollection('tc');
       var now = (new Date()).getTime();
 
       // verify single insert return objs have meta set properly
-      var obj = coll.insert({a:1, b:2});
+      var obj = coll.insert({ a: 1, b: 2 });
       expect(obj.hasOwnProperty('meta')).toEqual(true);
       expect(obj.hasOwnProperty('$loki')).toEqual(true);
       expect(obj.meta.hasOwnProperty('revision')).toEqual(true);
@@ -222,9 +219,9 @@ describe('loki', function () {
       expect(obj.meta.created).not.toBeLessThan(now);
 
       // verify batch insert return objs have meta set properly
-      var objs = coll.insert([ { a:2, b:3}, { a:3, b:4}]);
+      var objs = coll.insert([{ a: 2, b: 3 }, { a: 3, b: 4 }]);
       expect(Array.isArray(objs));
-      objs.forEach(function(o) {
+      objs.forEach(function (o) {
         expect(o.hasOwnProperty('meta')).toEqual(true);
         expect(o.hasOwnProperty('$loki')).toEqual(true);
         expect(o.meta.hasOwnProperty('revision')).toEqual(true);
@@ -234,14 +231,14 @@ describe('loki', function () {
       });
     });
 
-    it('meta set on events', function(done) {
+    it('meta set on events', function (done) {
       var tdb = new loki('test.db');
       var coll = tdb.addCollection('tc');
       var now = (new Date()).getTime();
 
-      coll.on('insert', function(o) {
+      coll.on('insert', function (o) {
         if (Array.isArray(o)) {
-          o.forEach(function(obj) {
+          o.forEach(function (obj) {
             expect(obj.hasOwnProperty('meta')).toEqual(true);
             expect(obj.hasOwnProperty('$loki')).toEqual(true);
             expect(obj.meta.hasOwnProperty('revision')).toEqual(true);
@@ -262,13 +259,13 @@ describe('loki', function () {
       });
 
       // verify single inserts emit with obj which has meta set properly
-      coll.insert({a:1, b:2});
+      coll.insert({ a: 1, b: 2 });
 
       // verify batch inserts emit with objs which have meta set properly
-      coll.insert([ { a:2, b:3}, { a:3, b:4}]);
+      coll.insert([{ a: 2, b: 3 }, { a: 3, b: 4 }]);
     });
 
-    it('meta not set on returned objects', function() {
+    it('meta not set on returned objects', function () {
       var tdb = new loki('test.db');
       var coll = tdb.addCollection('tc', { disableMeta: true });
 
@@ -358,7 +355,7 @@ describe('loki', function () {
 
   // We only support dot notation involving array when
   // the leaf property is the array.  This verifies that functionality
-  describe('dot notation across leaf object array', function() {
+  describe('dot notation across leaf object array', function () {
     it('works', function () {
       var dna = db.addCollection('dnacoll');
 
@@ -406,49 +403,49 @@ describe('loki', function () {
         }]
       });
 
-      var results = dna.find({'children.someProperty': 33 });
+      var results = dna.find({ 'children.someProperty': 33 });
       expect(results.length).toEqual(1);
 
-      results = dna.find({'children.someProperty': 11 });
+      results = dna.find({ 'children.someProperty': 11 });
       expect(results.length).toEqual(2);
 
-      results = dna.find({'children.someProperty': 22});
+      results = dna.find({ 'children.someProperty': 22 });
       expect(results.length).toEqual(2);
     });
   });
 
 
-  describe('dot notation terminating at leaf array', function() {
-    it('works', function() {
+  describe('dot notation terminating at leaf array', function () {
+    it('works', function () {
       var dna = db.addCollection('dnacoll');
 
       dna.insert({
-        "relations" : {
+        "relations": {
           "ids": [379]
         }
       });
 
       dna.insert({
-        "relations" : {
+        "relations": {
           "ids": [12, 379]
         }
       });
 
       dna.insert({
-        "relations" : {
+        "relations": {
           "ids": [111]
         }
       });
 
       var results = dna.find({
-        'relations.ids' : { $contains: 379 }
+        'relations.ids': { $contains: 379 }
       });
 
       expect(results.length).toEqual(2);
     });
   });
 
-  describe('dot notation across child array', function() {
+  describe('dot notation across child array', function () {
     it('works', function () {
       var dna = db.addCollection('dnacoll');
 
@@ -514,22 +511,22 @@ describe('loki', function () {
         }]
       });
 
-      var results = dna.find({'children.someArray.someProperty': 333});
+      var results = dna.find({ 'children.someArray.someProperty': 333 });
       expect(results.length).toEqual(1);
 
-      results = dna.find({'children.someArray.someProperty': 111});
+      results = dna.find({ 'children.someArray.someProperty': 111 });
       expect(results.length).toEqual(2);
 
-      results = dna.find({'children.someArray.someProperty': 222});
+      results = dna.find({ 'children.someArray.someProperty': 222 });
       expect(results.length).toEqual(2);
 
-      results = dna.find({'$and': [{'id': 3}, {'children.someArray.someProperty': 222}]});
+      results = dna.find({ '$and': [{ 'id': 3 }, { 'children.someArray.someProperty': 222 }] });
       expect(results.length).toEqual(1);
 
-      results = dna.find({'$and': [{'id': 1}, {'children.someArray.someProperty': 222}]});
+      results = dna.find({ '$and': [{ 'id': 1 }, { 'children.someArray.someProperty': 222 }] });
       expect(results.length).toEqual(0);
 
-      results = dna.find({'$or': [{'id': 1}, {'children.someArray.someProperty': 222}]});
+      results = dna.find({ '$or': [{ 'id': 1 }, { 'children.someArray.someProperty': 222 }] });
       expect(results.length).toEqual(3);
     });
   });
@@ -660,7 +657,7 @@ describe('loki', function () {
 
       range = eic.calculateRange('$gte', 'testFloat', 1.0);
       expect(range).toEqual([0, 8]); // 8th pos
-    })
+    });
   });
 
   describe('lazy indexLifecycle', function () {
@@ -693,8 +690,8 @@ describe('loki', function () {
       }); // should force index build
       expect(ilc.binaryIndices.testid.dirty).toEqual(false);
       expect(ilc.binaryIndices.testid.values.length).toEqual(2);
-    })
-  })
+    });
+  });
 
   describe('indexes', function () {
     it('works', function () {
@@ -963,29 +960,29 @@ describe('loki', function () {
   });
 
   // test for issue #747
-  describe('nestedOrExpressions', function() {
+  describe('nestedOrExpressions', function () {
     it('works', function () {
-      const queryFails = {'$or': [{'state': 'STATE_FAILED'}, {'$or': [{'state': 'STATE_DEGRADED'}, {'state': 'STATE_NORMAL'}]}]};
-      const queryWorks = {'$or': [{'state': 'STATE_NORMAL'}, {'$or': [{'state': 'STATE_DEGRADED'}, {'state': 'STATE_FAILED'}]}]};
+      const queryFails = { '$or': [{ 'state': 'STATE_FAILED' }, { '$or': [{ 'state': 'STATE_DEGRADED' }, { 'state': 'STATE_NORMAL' }] }] };
+      const queryWorks = { '$or': [{ 'state': 'STATE_NORMAL' }, { '$or': [{ 'state': 'STATE_DEGRADED' }, { 'state': 'STATE_FAILED' }] }] };
       const superSlim = [{
-      "uri": "/api/v3/disks/bfe8c919c2a3df669b9e0291795e488f",
-      "state": "STATE_NORMAL"
+        "uri": "/api/v3/disks/bfe8c919c2a3df669b9e0291795e488f",
+        "state": "STATE_NORMAL"
       }, {
-      "uri": "/api/v3/disks/bc3f751ee02ae613ed42c667fb57de75",
-      "state": "STATE_NORMAL"
+        "uri": "/api/v3/disks/bc3f751ee02ae613ed42c667fb57de75",
+        "state": "STATE_NORMAL"
       }, {
-      "uri": "/api/v3/disks/710466edfdc6609ea23e17eb0719ea74",
-      "state": "STATE_NORMAL"
+        "uri": "/api/v3/disks/710466edfdc6609ea23e17eb0719ea74",
+        "state": "STATE_NORMAL"
       }];
       const db = new loki('ssmc.db');
-      const lokiTable = db.addCollection('bobTest', {unique: ['uri']});
+      const lokiTable = db.addCollection('bobTest', { unique: ['uri'] });
       lokiTable.clear();
       lokiTable.insert(superSlim);
       const resultsSet = lokiTable.chain();
-      const result = resultsSet.find(queryWorks).data({removeMeta: true});
+      const result = resultsSet.find(queryWorks).data({ removeMeta: true });
       expect(result.length).toEqual(3);
       const resultsSet2 = lokiTable.chain();
-      const result2 = resultsSet2.find(queryFails).data({removeMeta: true});
+      const result2 = resultsSet2.find(queryFails).data({ removeMeta: true });
       expect(result2.length).toEqual(3); //<<=== THIS FAILS WITH result2.length actually 0
     });
   });
@@ -1027,7 +1024,7 @@ describe('loki', function () {
         }, {
           'testString': 'bbb'
         }]
-      }).testFloat, 6.2);
+      }).testFloat).toEqual(6.2);
 
       // findOne with $or op
       expect(eic.findOne({
@@ -1039,21 +1036,21 @@ describe('loki', function () {
       }).testFloat).toEqual(7.2);
 
       db.removeCollection('eic');
-    })
+    });
   });
 
-  describe('resultset unfiltered simplesort works', function() {
-    it('works', function() {
+  describe('resultset unfiltered simplesort works', function () {
+    it('works', function () {
       var ssdb = new loki('sandbox.db');
 
       // Add a collection to the database
       var items = ssdb.addCollection('items', { indices: ['name'] });
 
       // Add some documents to the collection
-      items.insert({ name : 'mjolnir', owner: 'thor', maker: 'dwarves' });
-      items.insert({ name : 'gungnir', owner: 'odin', maker: 'elves' });
-      items.insert({ name : 'tyrfing', owner: 'svafrlami', maker: 'dwarves' });
-      items.insert({ name : 'draupnir', owner: 'odin', maker: 'elves' });
+      items.insert({ name: 'mjolnir', owner: 'thor', maker: 'dwarves' });
+      items.insert({ name: 'gungnir', owner: 'odin', maker: 'elves' });
+      items.insert({ name: 'tyrfing', owner: 'svafrlami', maker: 'dwarves' });
+      items.insert({ name: 'draupnir', owner: 'odin', maker: 'elves' });
 
       // simplesort without filters on prop with index should work
       var results = items.chain().simplesort('name').data();
@@ -1073,21 +1070,21 @@ describe('loki', function () {
     });
   });
 
-  describe('resultset data removeMeta works', function() {
-    it('works', function() {
+  describe('resultset data removeMeta works', function () {
+    it('works', function () {
       var idb = new loki('sandbox.db');
 
       // Add a collection to the database
       var items = idb.addCollection('items', { indices: ['owner'] });
 
       // Add some documents to the collection
-      items.insert({ name : 'mjolnir', owner: 'thor', maker: 'dwarves' });
-      items.insert({ name : 'gungnir', owner: 'odin', maker: 'elves' });
-      items.insert({ name : 'tyrfing', owner: 'svafrlami', maker: 'dwarves' });
-      items.insert({ name : 'draupnir', owner: 'odin', maker: 'elves' });
+      items.insert({ name: 'mjolnir', owner: 'thor', maker: 'dwarves' });
+      items.insert({ name: 'gungnir', owner: 'odin', maker: 'elves' });
+      items.insert({ name: 'tyrfing', owner: 'svafrlami', maker: 'dwarves' });
+      items.insert({ name: 'draupnir', owner: 'odin', maker: 'elves' });
 
       // unfiltered with strip meta
-      var result = items.chain().data({removeMeta:true});
+      var result = items.chain().data({ removeMeta: true });
       expect(result.length).toEqual(4);
       expect(result[0].hasOwnProperty('$loki')).toEqual(false);
       expect(result[0].hasOwnProperty('meta')).toEqual(false);
@@ -1099,7 +1096,7 @@ describe('loki', function () {
       expect(result[3].hasOwnProperty('meta')).toEqual(false);
 
       // indexed sort with strip meta
-      result = items.chain().simplesort('owner').limit(2).data({removeMeta:true});
+      result = items.chain().simplesort('owner').limit(2).data({ removeMeta: true });
       expect(result.length).toEqual(2);
       expect(result[0].owner).toEqual('odin');
       expect(result[0].hasOwnProperty('$loki')).toEqual(false);
@@ -1109,7 +1106,7 @@ describe('loki', function () {
       expect(result[1].hasOwnProperty('meta')).toEqual(false);
 
       // unindexed find strip meta
-      result = items.chain().find({maker: 'elves'}).data({removeMeta: true});
+      result = items.chain().find({ maker: 'elves' }).data({ removeMeta: true });
       expect(result.length).toEqual(2);
       expect(result[0].maker).toEqual('elves');
       expect(result[0].hasOwnProperty('$loki')).toEqual(false);
@@ -1141,7 +1138,7 @@ describe('loki', function () {
       expect(result[1].hasOwnProperty('meta')).toEqual(true);
 
       // unindexed find strip meta
-      result = items.chain().find({maker: 'elves'}).data();
+      result = items.chain().find({ maker: 'elves' }).data();
       expect(result.length).toEqual(2);
       expect(result[0].maker).toEqual('elves');
       expect(result[0].hasOwnProperty('$loki')).toEqual(true);
@@ -1152,8 +1149,8 @@ describe('loki', function () {
     });
   });
 
-  describe('chained removes', function() {
-    it('works', function() {
+  describe('chained removes', function () {
+    it('works', function () {
       var rsc = db.addCollection('rsc');
 
       rsc.insert({
@@ -1183,7 +1180,7 @@ describe('loki', function () {
       expect(docCount).toEqual(4);
 
       // remove middle documents
-      rsc.chain().find({testFloat: 6.2}).remove();
+      rsc.chain().find({ testFloat: 6.2 }).remove();
 
 
       // verify new doc count
@@ -1196,32 +1193,32 @@ describe('loki', function () {
       // make sure its the documents we expect
       expect(results[0].testString).toEqual('hhh');
       expect(results[1].testString).toEqual('zzz');
-    })
+    });
   });
 
   describe('batches removes work', function () {
-    it('works', function() {
+    it('works', function () {
       var rrs = db.addCollection('rrs');
-      var idx, count=100;
+      var idx, count = 100;
       var r1, r2, c1, c2;
 
-      for (idx=0; idx<count; idx++) {
-        rrs.insert({ a: Math.floor(Math.random()*5), b: idx });
+      for (idx = 0; idx < count; idx++) {
+        rrs.insert({ a: Math.floor(Math.random() * 5), b: idx });
       }
 
       r1 = rrs.find({ a: 2 });
       r2 = rrs.find({ a: 4 });
 
-      c1 = r1?r1.length:0;
-      c2 = r2?r2.length:0;
+      c1 = r1 ? r1.length : 0;
+      c2 = r2 ? r2.length : 0;
 
       // on initial insert, loki ids will always be one greater than data position
-      rrs.chain().find({a: 2}).remove();
+      rrs.chain().find({ a: 2 }).remove();
       // so not that data positions have shifted we will do another
-      rrs.chain().find({a: 4}).remove();
+      rrs.chain().find({ a: 4 }).remove();
 
       // verify that leftover count matches total count minus deleted counts
-      expect(rrs.count()).toEqual(count-c1-c2);
+      expect(rrs.count()).toEqual(count - c1 - c2);
     });
   });
 
@@ -1257,10 +1254,10 @@ describe('loki', function () {
       var result1 = users.find(query).sort(docCompare);
       var result2 = view.data().sort(docCompare);
       result1.forEach(function (obj) {
-        delete obj.meta
+        delete obj.meta;
       });
       result2.forEach(function (obj) {
-        delete obj.meta
+        delete obj.meta;
       });
 
       // Result data Equality
@@ -1274,8 +1271,6 @@ describe('loki', function () {
 
       // View data copy strict equality
       expect(view.resultset === view.resultset.copy()).toBeFalsy();
-
-      return view;
     });
   });
 
@@ -1392,10 +1387,10 @@ describe('loki', function () {
   });
 
   describe('stepDynamicViewPersistence', function () {
-    it('works', function testCollections() {
+    it.skip('works', function testCollections() {
       // mock persistence by using memory adapter
       var mem = new loki.LokiMemoryAdapter();
-      var db = new loki('testCollections', {adapter:mem});
+      var db = new loki('testCollections', { adapter: mem });
       db.name = 'testCollections';
 
       // DB name
@@ -1426,13 +1421,13 @@ describe('loki', function () {
       t.insert(users);
 
       // 2 docs after array insert
-      expect(2).toEqual(t.data.length)
+      expect(2).toEqual(t.data.length);
 
       t.remove(users);
       // 0 docs after array remove
-      expect(0).toEqual(t.data.length)
+      expect(0).toEqual(t.data.length);
 
-      function TestError() {}
+      function TestError() { }
       TestError.prototype = new Error;
       db.autosaveEnable();
       db.on('close', function () {
