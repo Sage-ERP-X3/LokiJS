@@ -1,9 +1,12 @@
 {
   "name": "@sage/lokijs",
-  "version": "1.6.0",
+  "version": "1.6.1",
   "description": "Fast document oriented javascript in-memory database",
   "main": "src/lokijs.js",
   "types": "types.d.ts",
+  "directories": {
+    "example": "examples"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/Sage-ERP-X3/LokiJS.git"

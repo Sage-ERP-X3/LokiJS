@@ -2101,6 +2101,6 @@ declare namespace LokiConstructor {
     export class LokiFsAdapter extends _LokiFsAdapter {}
 }
 
-declare module "lokijs" {
+declare module "@sage/lokijs" {
     export = LokiConstructor;
 }
