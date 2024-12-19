@@ -5027,6 +5027,7 @@
 
       /* OPTIONS */
       options = options || {};
+      this.options = options;
 
       this.caseInsensitive = options.caseInsensitive || false;
 
@@ -5227,7 +5228,7 @@
     }
 
     Collection.prototype = new LokiEventEmitter();
-    Collection.prototype.contructor = Collection;
+    Collection.prototype.constructor = Collection;
 
     /*
       * For ChangeAPI default to clone entire object, for delta changes create object with only differences (+ $loki and meta)
