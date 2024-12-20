@@ -1292,6 +1292,7 @@
 
       for (i = 0; i < len; i += 1) {
         var curcol = this.collections[i];
+
         if (curcol.name === collectionName) {
           var tmpcol = new Collection(collectionName, curcol.options);
           for (var prop in curcol) {
