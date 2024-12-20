@@ -1291,9 +1291,9 @@
         len = this.collections.length;
 
       for (i = 0; i < len; i += 1) {
-        if (this.collections[i].name === collectionName) {
-          var tmpcol = new Collection(collectionName, {});
-          var curcol = this.collections[i];
+        var curcol = this.collections[i];
+        if (curcol.name === collectionName) {
+          var tmpcol = new Collection(collectionName, curcol.options);
           for (var prop in curcol) {
             if (curcol.hasOwnProperty(prop) && tmpcol.hasOwnProperty(prop)) {
               curcol[prop] = tmpcol[prop];
@@ -5027,6 +5027,7 @@
 
       /* OPTIONS */
       options = options || {};
+      this.options = options;
 
       this.caseInsensitive = options.caseInsensitive || false;
 
@@ -5227,7 +5228,7 @@
     }
 
     Collection.prototype = new LokiEventEmitter();
-    Collection.prototype.contructor = Collection;
+    Collection.prototype.constructor = Collection;
 
     /*
       * For ChangeAPI default to clone entire object, for delta changes create object with only differences (+ $loki and meta)
